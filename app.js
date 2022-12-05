@@ -7,7 +7,6 @@ const jwt = require('jsonwebtoken')
 const User = require('./db/userModel')
 const auth = require('./auth')
 
-
 dbConnect();
 
 // Curb Cores Error by adding a header here
