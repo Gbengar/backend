@@ -3,6 +3,20 @@ const mongoose = require("mongoose");
 
 // user schema
 const UserSchema = new mongoose.Schema({
+  // firstname field
+  firstname: {
+    type: String,
+    required: [true, 'Enter your Firstname'],
+    unique: false
+  },
+
+  // lastname field
+  lastname: {
+    type: String,
+    required: [true, 'Enter your Firstname'],
+    unique: false
+  },
+
   // email field
   email: {
     type: String,
