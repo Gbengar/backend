@@ -118,12 +118,12 @@ app.post('/login', (request, response)=>{
 
 // free endpoint
 app.get("/free-endpoint", (request, response) => {
-  response.json({ message: `${User.firstname}` });
+  response.json({ message: "You are free to access me anytime" });
 });
 
 // authentication endpoint
 app.get("/auth-endpoint", auth, (request, response) => {
-  response.json({ message: "You are authorized to access me" });
+  response.json({ message: `${User.firstname}` });
 });
 
 
