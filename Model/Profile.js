@@ -11,7 +11,24 @@ const ProfileSchema = new mongoose.Schema({
     location: {
         type: String
     },
-
+    website: {
+        type: String
+      },
+    social: {
+        
+        twitter: {
+          type: String
+        },
+        facebook: {
+          type: String
+        },
+        linkedin: {
+          type: String
+        },
+        instagram: {
+          type: String
+        }
+    }
 });
 
 module.exports = mongoose.model('profile', ProfileSchema)

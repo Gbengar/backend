@@ -1,26 +1,29 @@
 const express = require('express')
 const router = express.Router()
+const User = require('../../Model/userModel')
 const auth = require('../../Model/auth')
 const Profile = require('../../Model/Profile')
-const User = require('../../Model/userModel')
+const { check, validationResult } = require('express-validator');
+const normalize = require('normalize-url');
+const jwt = require('jsonwebtoken');
 
 
 
 // creating profile
-router.get("/me", auth, async (request, response) => {
+router.get("/me", auth, async (req, res) => {
     try {
-      const profile = await Profile.findOne( {user: request.user.id} ).populate('user', ['firstname', 'lastname'] )
+      const profile = await Profile.findOne( {user: req.user.id} ).populate('user', ['firstname', 'lastname'] )
       
       
       if(!profile) {
-        return response.status(400).json({ message: 'There is no profile'});
+        return res.status(400).json({ message: 'There is no profile'});
   
       }
   
-      response.json(profile)
+      res.json(profile)
     } catch (error) {
       console.error(error.message)
-      response.status(401).send('Server Error')
+      res.status(401).send('Server Error')
     }
   });
 
@@ -28,8 +31,8 @@ router.get("/me", auth, async (request, response) => {
   // Create or update User
 
   router.post('/', auth,
-    check('status', 'Status is required').notEmpty(),
-    check('skills', 'Skills is required').notEmpty(),
+    check('bio', 'Bio is required').notEmpty(),
+    check('location', 'Location is required').notEmpty(),
     async (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -38,9 +41,9 @@ router.get("/me", auth, async (request, response) => {
   
       // destructure the request
       const {
+        bio,
         website,
-        skills,
-        youtube,
+        location,
         twitter,
         instagram,
         linkedin,
@@ -56,14 +59,11 @@ router.get("/me", auth, async (request, response) => {
           website && website !== ''
             ? normalize(website, { forceHttps: true })
             : '',
-        skills: Array.isArray(skills)
-          ? skills
-          : skills.split(',').map((skill) => ' ' + skill.trim()),
         ...rest
       };
   
       // Build socialFields object
-      const socialFields = { youtube, twitter, instagram, linkedin, facebook };
+      const socialFields = { twitter, instagram, linkedin, facebook };
   
       // normalize social fields to ensure valid url
       for (const [key, value] of Object.entries(socialFields)) {

@@ -1,47 +1,86 @@
-const express = require('express')
-const router = express.Router()
-const bcrypt = require('bcrypt')
-const User = require('../../Model/userModel')
-const bodyParser = require('body-parser');
+const express = require('express');
+const router = express.Router();
+const gravatar = require('gravatar');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const { check, validationResult } = require('express-validator');
+const normalize = require('normalize-url');
 
+const User = require('../../Model/userModel');
 
-router.post("/", (request, response) => {
-    // hash the password
-    bcrypt.hash(request.body.password, 10)
-      .then((hashedPassword) => {
-        // create a new user instance and collect the data
-        const user = new User({
-          firstname: request.body.firstname,
-          lastname: request.body.lastname,
-          email: request.body.email,
-          password: hashedPassword,
-        });
-  
-        // save the new user
-        user
-          .save()
-          // return success if the new user is added to the database successfully
-          .then((result) => {
-            response.status(201).send({
-              message: "User Created Successfully",
-              result,
-            });
-          })
-          // catch error if the new user wasn't added successfully to the database
-          .catch((error) => {
-            response.status(500).send({
-              message: "Error creating user",
-              error,
-            });
-          });
-      })
-      // catch error if the password hash isn't successful
-      .catch((e) => {
-        response.status(500).send({
-          message: "Password was not hashed successfully",
-          e,
-        });
+// @route    POST api/users
+// @desc     Register user
+// @access   Public
+router.post(
+  '/',
+  check('firstname', 'First Name is required').notEmpty(),
+  check('lastname', 'Last Name is required').notEmpty(),
+  check('email', 'Please include a valid email').isEmail(),
+  check(
+    'password',
+    'Please enter a password with 6 or more characters'
+  ).isLength({ min: 6 }),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { firstname, lastname, email, password } = req.body;
+
+    try {
+      let user = await User.findOne({ email });
+
+      if (user) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: 'User already exists' }] });
+      }
+
+      const avatar = normalize(
+        gravatar.url(email, {
+          s: '200',
+          r: 'pg',
+          d: 'mm'
+        }),
+        { forceHttps: true }
+      );
+
+      user = new User({
+        firstname,
+        lastname,
+        email,
+        avatar,
+        password
       });
-  });
 
-  module.exports = router;
+      const salt = await bcrypt.genSalt(10);
+
+      user.password = await bcrypt.hash(password, salt);
+
+      await user.save();
+
+      const payload = {
+        user: {
+          id: user.id
+        }
+      };
+
+      jwt.sign(
+        payload,
+        config.get('jwtSecret'),
+        { expiresIn: '5 days' },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+        }
+      );
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+module.exports = router;
