@@ -30,7 +30,12 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Please provide a password!"],
     unique: false,
   },
+
+  date: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // export UserSchema
-module.exports = mongoose.model.Users || mongoose.model("Users", UserSchema);
+module.exports = mongoose.model.User || mongoose.model("User", UserSchema);

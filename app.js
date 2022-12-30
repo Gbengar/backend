@@ -1,13 +1,24 @@
 const express = require("express");
 const app = express();
-const bodyParser = require('body-parser');
 const dbConnect = require('./db/dbConnect')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const User = require('./db/userModel')
-const auth = require('./auth')
+const Profile = require('./Model/Profile')
+const auth = require('./Model/auth')
+const router = express.Router();
+const path = require('path');
 
 dbConnect();
+
+app.get('/', (req,res)=> res.send('API working'))
+
+// Init Middleware
+app.use(express.json());
+
+// Define Route
+app.use('/register', require('./routes/api/register'));
+app.use('/auth-endpoint', require('./routes/api/authendpoint'));
+app.use('/free', require('./routes/api/home'));
+app.use('/login', require('./routes/api/login'));
+app.use('/profile', require('./routes/api/profile'));
 
 // Curb Cores Error by adding a header here
 app.use((req,res,next) =>{
@@ -24,107 +35,37 @@ app.use((req,res,next) =>{
 })
 
 
-// body parser configuration
-app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (request, response, next) => {
-  response.json({ message: "Hey! This is your server response!" });
-  next();
-});
+//Get current User Profile
 
+router.get('/me', auth, async (req,res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id }).populate('user', ['firstname', 'lastname'])
+    if(!profile){
+      return res.status(400).json({ message : 'No profile for User' })
+    }
 
-app.post("/register", (request, response) => {
-  // hash the password
-  bcrypt
-    .hash(request.body.password, 10)
-    .then((hashedPassword) => {
-      // create a new user instance and collect the data
-      const user = new User({
-        firstname: request.body.firstname,
-        lastname: request.body.lastname,
-        email: request.body.email,
-        password: hashedPassword,
-      });
-
-      // save the new user
-      user
-        .save()
-        // return success if the new user is added to the database successfully
-        .then((result) => {
-          response.status(201).send({
-            message: "User Created Successfully",
-            result,
-          });
-        })
-        // catch error if the new user wasn't added successfully to the database
-        .catch((error) => {
-          response.status(500).send({
-            message: "Error creating user",
-            error,
-          });
-        });
-    })
-    // catch error if the password hash isn't successful
-    .catch((e) => {
-      response.status(500).send({
-        message: "Password was not hashed successfully",
-        e,
-      });
-    });
-});
-
-app.post('/login', (request, response)=>{
-  User.findOne({email: request.body.email})
-  .then((user)=>{
-    bcrypt.compare(request.body.password, user.password)
-    .then((passwordCheck)=>{
-      // check if password matches
-      if(!passwordCheck) {
-        return response.status(400).send({
-          message : 'Passwords does not match',
-          error,
-        })
-      }
-      //   create JWT token
-      const token = jwt.sign({
-        userId: user._id,
-        userEmail: user.email,
-      },
-      'RANDOM-TOKEN',
-      { expiresIn : '24h'}
-       
-      );
-      response.status(200).send({
-        message: 'Login Successful',
-        email: user.email,
-        token
-      })
-    })
-    .catch((error)=>{
-      response.status(400).send({
-        message: 'Password does not match',
-        error,
-      })
-    })
-  })
-  .catch((e)=>{
-    response.status(404).send({
-      message: 'Email not Found',
-      e,
-    })
-  })
+    res.json(profile)
+  } catch (error) {
+    console.error(error.message)
+    res.status(500).send('Server Error')
+  }
 })
 
-// free endpoint
-app.get("/free-endpoint", (request, response) => {
-  response.json({ message: "You are free to access me anytime" });
-});
+//Get Profiles
 
-// authentication endpoint
-app.get("/auth-endpoint", auth, (request, response) => {
-  response.json({ message: `${User.firstname}` });
-});
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static('client/build'));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
+}
+
+const PORT = process.env.PORT || 3000;
 
 
-module.exports = app;
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+
+
