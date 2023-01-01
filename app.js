@@ -5,7 +5,10 @@ const Profile = require('./Model/Profile')
 const auth = require('./Model/auth')
 const router = express.Router();
 const path = require('path');
+const cors = require('cors')
 
+
+app.use(cors())
 dbConnect();
 
 app.get('/', (req,res)=> res.send('API working'))
@@ -16,12 +19,13 @@ app.use(express.json());
 // Define Route
 app.use('/register', require('./routes/api/register'));
 app.use('/auth-endpoint', require('./routes/api/authendpoint'));
-app.use('/free', require('./routes/api/home'));
+app.use('/free-endpoint', require('./routes/api/home'));
 app.use('/login', require('./routes/api/login'));
 app.use('/profile', require('./routes/api/profile'));
 
 // Curb Cores Error by adding a header here
-app.use((req,res,next) =>{
+
+/*app.use((req,res,next) =>{
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
@@ -33,7 +37,7 @@ app.use((req,res,next) =>{
   );
   next()
 })
-
+*/
 
 
 //Get current User Profile
