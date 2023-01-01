@@ -8,7 +8,7 @@ const path = require('path');
 const cors = require('cors')
 
 
-app.use(cors())
+
 dbConnect();
 
 app.get('/', (req,res)=> res.send('API working'))
@@ -25,7 +25,7 @@ app.use('/profile', require('./routes/api/profile'));
 
 // Curb Cores Error by adding a header here
 
-/*app.use((req,res,next) =>{
+app.use((req,res,next) =>{
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
@@ -37,7 +37,7 @@ app.use('/profile', require('./routes/api/profile'));
   );
   next()
 })
-*/
+
 
 
 //Get current User Profile
