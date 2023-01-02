@@ -1,4 +1,5 @@
 const express = require('express');
+const app = express()
 const router = express.Router();
 const gravatar = require('gravatar');
 const bcrypt = require('bcrypt');
@@ -6,10 +7,12 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
 const normalize = require('normalize-url');
+const cors = require('cors')
 
 const User = require('../../Model/userModel');
 
-app.use((req,res,next) =>{
+app.use(cors())
+/*app.use((req,res,next) =>{
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
@@ -21,7 +24,7 @@ app.use((req,res,next) =>{
   );
   next()
 })
-
+*/
 
 
 // @route    POST api/users
@@ -30,7 +33,7 @@ app.use((req,res,next) =>{
 router.post(
   '/',
 
-  next(),
+  cors(),
   check('firstname', 'First Name is required').notEmpty(),
   check('lastname', 'Last Name is required').notEmpty(),
   check('email', 'Please include a valid email').isEmail(),
