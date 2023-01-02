@@ -7,12 +7,11 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
 const normalize = require('normalize-url');
-const cors = require('cors')
+
 
 const User = require('../../Model/userModel');
 
-app.use(cors())
-/*app.use((req,res,next) =>{
+app.use((req,res,next) =>{
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
@@ -24,7 +23,7 @@ app.use(cors())
   );
   next()
 })
-*/
+
 
 
 // @route    POST api/users
@@ -33,7 +32,7 @@ app.use(cors())
 router.post(
   '/',
 
-  cors(),
+  
   check('firstname', 'First Name is required').notEmpty(),
   check('lastname', 'Last Name is required').notEmpty(),
   check('email', 'Please include a valid email').isEmail(),
