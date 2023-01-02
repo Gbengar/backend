@@ -11,28 +11,11 @@ const normalize = require('normalize-url');
 
 const User = require('../../Model/userModel');
 
-app.use((req,res,next) =>{
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-  );
-  next()
-})
-
-
-
 // @route    POST api/users
 // @desc     Register user
 // @access   Public
 router.post(
   '/',
-
-  
   check('firstname', 'First Name is required').notEmpty(),
   check('lastname', 'Last Name is required').notEmpty(),
   check('email', 'Please include a valid email').isEmail(),
