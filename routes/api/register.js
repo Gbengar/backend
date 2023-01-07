@@ -15,7 +15,7 @@ const User = require('../../Model/userModel');
 // @desc     Register user
 // @access   Public
 router.post(
-  '/',
+  '/', 
   check('firstname', 'First Name is required').notEmpty(),
   check('lastname', 'Last Name is required').notEmpty(),
   check('email', 'Please include a valid email').isEmail(),

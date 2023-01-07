@@ -32,31 +32,19 @@ app.use((req,res,next) =>{
   );
   next()
 
-  app.use('/register', require('./routes/api/register'));
+  
+
+})
+app.use('/register', require('./routes/api/register'));
 app.use('/auth-endpoint', require('./routes/api/authendpoint'));
 app.use('/free-endpoint', require('./routes/api/home'));
 app.use('/login', require('./routes/api/login'));
 app.use('/profile', require('./routes/api/profile'));
 
-})
-
 
 
 //Get current User Profile
 
-router.get('/me', auth, async (req,res) => {
-  try {
-    const profile = await Profile.findOne({ user: req.user.id }).populate('user', ['firstname', 'lastname'])
-    if(!profile){
-      return res.status(400).json({ message : 'No profile for User' })
-    }
-
-    res.json(profile)
-  } catch (error) {
-    console.error(error.message)
-    res.status(500).send('Server Error')
-  }
-})
 
 //Get Profiles
 
